@@ -1,1 +1,1 @@
-pip install scikit-learn pandas
+pip install flask pandas scikit-learn
