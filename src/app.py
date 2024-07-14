@@ -75,7 +75,7 @@ def predict():
 
     # Prepare the JSON response with the prediction
     response = {"prediction": prediction.tolist()}  # Convert to list for JSON
-    response = flask.jsonify(response), 200
+    response = flask.jsonify(response)
     response.headers['Access-Control-Allow-Origin'] = '*'
 
     return response
