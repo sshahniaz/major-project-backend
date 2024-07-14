@@ -5,13 +5,17 @@ import csv
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import LabelEncoder, StandardScaler
+import os
 
 import pickle 
 
 app = flask.Flask(__name__)
 
+# Get the full path to the model file
+model_path = os.path.join(os.path.dirname(__file__), "..", "models", "BigMart_Sales_Model.pkl")
+
 # Load your pre-trained ML model (replace with your loading logic)
-with open("../models/BigMart_Sales_Model.pkl", "rb") as file:
+with open(model_path, "rb") as file:
     model = pickle.load(file) # Adjust the filename as needed
 
 @app.route("/predict", methods=["POST"])
