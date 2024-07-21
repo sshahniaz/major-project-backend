@@ -73,8 +73,83 @@ def predict():
     # Make the prediction using your pre-trained Lasso model
     prediction = model.predict(features)
 
+    df['OutletSales'] = prediction
+
+    #decode the dataframe to original form
+    df['FatContent'] = df['FatContent'].replace({0:'Low Fat', 1:'Regular'})
+    df['OutletSize'] = df['OutletSize'].replace({0:'Small', 1:'Medium', 2:'High'})
+    df['LocationType'] = df['LocationType'].replace({0:'Tier 1', 1:'Tier 2', 2:'Tier 3'})
+    df['OutletType'] = df['OutletType'].replace({0:'Grocery Store', 1:'Supermarket Type1', 2:'Supermarket Type2', 3:'Supermarket Type3'})
+
+    
+    # Calculate average sales for each product type
+    product_sales = df.groupby("ProductType")["OutletSales"].mean()
+    product_sales = product_sales.sort_values(ascending=False)
+
+    # Top 10 product types by sales
+    top10_products = product_sales.head(10).reset_index()
+    top10_products = top10_products.rename(columns={"ProductType": "productType", "OutletSales": "sales"})
+
+    # Prepare location type (Tier) data
+    tiers = df.groupby("LocationType")["OutletSales"].mean().reset_index()
+    tiers = tiers.rename(columns={"LocationType": "type", "OutletSales": "averageTierSales"})
+
+    # Prepare Outlet Type data
+    outlet_types = df.groupby(["LocationType", "OutletType"])["OutletSales"].mean().reset_index()
+
+    # Prepare Outlet Size data
+    outlet_sizes = df.groupby(["LocationType", "OutletType", "OutletSize"])["OutletSales"].mean().reset_index()
+
+    # Prepare Product Type data
+    product_types = df.groupby(["LocationType", "OutletType", "OutletSize", "ProductType"])["OutletSales"].mean().reset_index()
+    product_types = product_types.rename(columns={"ProductType": "name", "OutletSales": "averageSales"})
+
+    # Combine data into a dictionary
+    data = {
+      "top10ProductTypesSales": top10_products.to_dict(orient="records"),
+      "locationType": [],
+    }
+
+    # Prepare location data with nested structures
+
+    for tier_id, tier in tiers.iterrows():
+        location_data = {
+            "type": tier["type"],
+            "averageTierSales": tier["averageTierSales"],
+            "OutletType": []
+        }
+
+        # Add Outlet Type data
+        for outlet_type_id, outlet_type in outlet_types[outlet_types["LocationType"] == tier["type"]].iterrows():
+            outlet_type_data = {
+                "type": outlet_type["OutletType"],
+                "averageTypeSales": outlet_type["OutletSales"],
+                "OutletSize": []
+            }
+
+            # Add Outlet Size data
+            for outlet_size_id, outlet_size in outlet_sizes[(outlet_sizes["LocationType"] == tier["type"]) & (outlet_sizes["OutletType"] == outlet_type["OutletType"])].iterrows():
+                outlet_size_data = {
+                    "size": outlet_size["OutletSize"],
+                    "averageSalesforSize": outlet_size["OutletSales"],
+                    "productTypes": []
+                }
+
+                # Add Product Type data
+                for product_type_id, product_type in product_types[(product_types["LocationType"] == tier["type"]) & (product_types["OutletType"] == outlet_type["OutletType"]) & (product_types["OutletSize"] == outlet_size["OutletSize"])].iterrows():
+                    product_type_data = {
+                        "name": product_type["name"],
+                        "averageSales": product_type["averageSales"]
+                    }
+                    outlet_size_data["productTypes"].append(product_type_data)
+
+                outlet_type_data["OutletSize"].append(outlet_size_data)
+            location_data["OutletType"].append(outlet_type_data)
+
+        data["locationType"].append(location_data)
+
     # Prepare the JSON response with the prediction
-    response = {"prediction": prediction.tolist()}  # Convert to list for JSON
+    response = json.dumps(data, indent=4)  # Convert to list for JSON
     response = flask.jsonify(response)
     response.headers['Access-Control-Allow-Origin'] = '*'
 
