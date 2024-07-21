@@ -150,7 +150,7 @@ def predict():
 
     # Prepare the JSON response with the prediction
     # response = json.dumps(data, indent=4)  # Convert to list for JSON
-    response = flask.jsonify(response)
+    response = flask.jsonify(data)
     response.headers['Access-Control-Allow-Origin'] = '*'
 
     return response
