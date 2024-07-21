@@ -47,6 +47,8 @@ def predict():
     if missing_columns:
       return flask.jsonify({"error": f"Missing columns in CSV file: {', '.join(missing_columns)}"}), 400
     
+    initialDf = df
+
     #Standardasing the FatContent column
     ifc_dict = {'Low Fat':'Low Fat', 'Regular':'Regular', 'LF':'Low Fat', 'reg':'Regular', 'low fat':'Low Fat'}
     df['FatContent'] = df['FatContent'].replace(ifc_dict)
@@ -73,17 +75,17 @@ def predict():
     # Make the prediction using your pre-trained Lasso model
     prediction = model.predict(features)
 
-    df['OutletSales'] = prediction
+    initialDf['OutletSales'] = prediction
 
     #decode the dataframe to original form
-    df['FatContent'] = df['FatContent'].replace({0:'Low Fat', 1:'Regular'})
-    df['OutletSize'] = df['OutletSize'].replace({0:'Small', 1:'Medium', 2:'High'})
-    df['LocationType'] = df['LocationType'].replace({0:'Tier 1', 1:'Tier 2', 2:'Tier 3'})
-    df['OutletType'] = df['OutletType'].replace({0:'Grocery Store', 1:'Supermarket Type1', 2:'Supermarket Type2', 3:'Supermarket Type3'})
+    initialDf['FatContent'] = initialDf['FatContent'].replace({0:'Low Fat', 1:'Regular'})
+    initialDf['OutletSize'] = initialDf['OutletSize'].replace({0:'Small', 1:'Medium', 2:'High'})
+    initialDf['LocationType'] = initialDf['LocationType'].replace({0:'Tier 1', 1:'Tier 2', 2:'Tier 3'})
+    initialDf['OutletType'] = initialDf['OutletType'].replace({0:'Grocery Store', 1:'Supermarket Type1', 2:'Supermarket Type2', 3:'Supermarket Type3'})
 
     
     # Calculate average sales for each product type
-    product_sales = df.groupby("ProductType")["OutletSales"].mean()
+    product_sales = initialDf.groupby("ProductType")["OutletSales"].mean()
     product_sales = product_sales.sort_values(ascending=False)
 
     # Top 10 product types by sales
@@ -91,17 +93,17 @@ def predict():
     top10_products = top10_products.rename(columns={"ProductType": "productType", "OutletSales": "sales"})
 
     # Prepare location type (Tier) data
-    tiers = df.groupby("LocationType")["OutletSales"].mean().reset_index()
+    tiers = initialDf.groupby("LocationType")["OutletSales"].mean().reset_index()
     tiers = tiers.rename(columns={"LocationType": "type", "OutletSales": "averageTierSales"})
 
     # Prepare Outlet Type data
-    outlet_types = df.groupby(["LocationType", "OutletType"])["OutletSales"].mean().reset_index()
+    outlet_types = initialDf.groupby(["LocationType", "OutletType"])["OutletSales"].mean().reset_index()
 
     # Prepare Outlet Size data
-    outlet_sizes = df.groupby(["LocationType", "OutletType", "OutletSize"])["OutletSales"].mean().reset_index()
+    outlet_sizes = initialDf.groupby(["LocationType", "OutletType", "OutletSize"])["OutletSales"].mean().reset_index()
 
     # Prepare Product Type data
-    product_types = df.groupby(["LocationType", "OutletType", "OutletSize", "ProductType"])["OutletSales"].mean().reset_index()
+    product_types = initialDf.groupby(["LocationType", "OutletType", "OutletSize", "ProductType"])["OutletSales"].mean().reset_index()
     product_types = product_types.rename(columns={"ProductType": "name", "OutletSales": "averageSales"})
 
     # Combine data into a dictionary
