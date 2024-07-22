@@ -14,7 +14,7 @@ app = flask.Flask(__name__)
 # Get the full path to the model file
 model_path = os.path.join(os.path.dirname(__file__), "..", "models", "BigMart_Sales_Model.pkl")
 
-# Load your pre-trained ML model (replace with your loading logic)
+# Load your pre-trained ML model using pickle
 with open(model_path, "rb") as file:
     model = pickle.load(file) # Adjust the filename as needed
 
