@@ -42,7 +42,7 @@ def predict():
 
 
     # Check if the CSV data has the expected columns
-    expected_columns = ['ProductID', 'FatContent', 'ProductType', 'OutletID', 'OutletSize', 'LocationType', 'OutletType', 'Weight', 'ProductVisibility', 'MRP', 'EstablishmentYear']
+    expected_columns = [ 'ProductType', 'OutletSize', 'LocationType', 'OutletType', 'ProductVisibility', 'MRP', 'EstablishmentYear']
     missing_columns = set(expected_columns) - set(df.columns)
     if missing_columns:
       return flask.jsonify({"error": f"Missing columns in CSV file: {', '.join(missing_columns)}"}), 400
@@ -50,8 +50,8 @@ def predict():
     initialDf = df
 
     #Standardasing the FatContent column
-    ifc_dict = {'Low Fat':'Low Fat', 'Regular':'Regular', 'LF':'Low Fat', 'reg':'Regular', 'low fat':'Low Fat'}
-    df['FatContent'] = df['FatContent'].replace(ifc_dict)
+    # ifc_dict = {'Low Fat':'Low Fat', 'Regular':'Regular', 'LF':'Low Fat', 'reg':'Regular', 'low fat':'Low Fat'}
+    # df['FatContent'] = df['FatContent'].replace(ifc_dict)
 
     #Encoding data
     encode_dict = {'Low Fat':0, 'Regular': 1, 'Small':0, 'Medium':1,'High':2, 'Tier 3':2, 'Tier 2': 1, 'Tier 1': 0, 'Grocery Store':0, 'Supermarket Type1':1, 'Supermarket Type2':2, 'Supermarket Type3':3}
@@ -67,7 +67,8 @@ def predict():
       df[col] = le.fit_transform(df[col].astype(str))
       label_encoders[col] = le
 
-    features = df.drop(columns = ['Weight', 'FatContent','ProductID','OutletID'], axis = 1)  
+    # features = df.drop(columns = ['Weight', 'FatContent','ProductID','OutletID'], axis = 1) 
+    features = df 
     scaler = StandardScaler()
     features = scaler.fit_transform(features)
 
@@ -78,7 +79,7 @@ def predict():
     initialDf['OutletSales'] = prediction
 
     #decode the dataframe to original form
-    initialDf['FatContent'] = initialDf['FatContent'].replace({0:'Low Fat', 1:'Regular'})
+    # initialDf['FatContent'] = initialDf['FatContent'].replace({0:'Low Fat', 1:'Regular'})
     initialDf['OutletSize'] = initialDf['OutletSize'].replace({0:'Small', 1:'Medium', 2:'High'})
     initialDf['LocationType'] = initialDf['LocationType'].replace({0:'Tier 1', 1:'Tier 2', 2:'Tier 3'})
     initialDf['OutletType'] = initialDf['OutletType'].replace({0:'Grocery Store', 1:'Supermarket Type1', 2:'Supermarket Type2', 3:'Supermarket Type3'})
