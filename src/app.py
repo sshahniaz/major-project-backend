@@ -4,6 +4,7 @@ import json
 import csv
 import pandas as pd
 import numpy as np
+from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 import os
 
@@ -13,6 +14,9 @@ app = flask.Flask(__name__)
 
 # Get the full path to the model file
 model_path = os.path.join(os.path.dirname(__file__), "..", "models", "BigMart_Sales_Model.pkl")
+
+# Get the full path to the test scores CSV file
+test_scores_path = os.path.join(os.path.dirname(__file__), "..", "data", "testScores.csv")
 
 # Load your pre-trained ML model using pickle
 with open(model_path, "rb") as file:
@@ -77,6 +81,36 @@ def predict():
     prediction = model.predict(features)
 
     initialDf['OutletSales'] = prediction
+
+     # Load corresponding full data CSV based on filename
+    full_data_filename = None
+    if uploaded_file.filename.startswith("CleanedSynth1_Test_Set"):
+        full_data_filename = "CleanedSynth1_Test_Set_Full.csv"
+    elif uploaded_file.filename.startswith("CleanedSynth2_Test_Set"):
+        full_data_filename = "CleanedSynth2_Test_Set_Full.csv"
+    else:
+        return flask.jsonify({"error": "Invalid file name. Expected 'CleanedSynth1_Test_Set.csv' or 'CleanedSynth2_Test_Set.csv'"}), 400
+
+    # Load full data CSV
+    try:
+        full_data = pd.read_csv(os.path.join(os.path.dirname(__file__), "..", "data", full_data_filename))
+    except Exception as e:
+        return flask.jsonify({"error": f"Error reading full data CSV: {str(e)}"}), 400
+
+    # Calculate MSE and R-squared
+    mse = np.sqrt(mean_squared_error(full_data['OutletSales'], initialDf['OutletSales']))
+    r2 = r2_score(full_data['OutletSales'], initialDf['OutletSales'])
+
+    # Create a new DataFrame for the score
+    score_data = {'filename': uploaded_file.filename, 'mse': mse, 'r2': r2}
+    score_df = pd.DataFrame(score_data, index=[0])
+
+    ## Append the score DataFrame to the CSV file
+    if not os.path.exists(test_scores_path):
+        score_df.to_csv(test_scores_path, index=False)
+    else:
+        score_df.to_csv(test_scores_path, mode='a', header=False, index=False)
+
 
     #decode the dataframe to original form
     # initialDf['FatContent'] = initialDf['FatContent'].replace({0:'Low Fat', 1:'Regular'})
@@ -157,6 +191,27 @@ def predict():
     response.headers['Access-Control-Allow-Origin'] = '*'
 
     return response
+
+@app.route("/getTestScores" , methods=["GET"])
+def get_test_scores():
+  """
+  Reads the testScores.csv file and returns its contents as JSON.
+  """
+  # Get the full path to the test scores CSV file
+  test_scores_path = os.path.join(os.path.dirname(__file__), "..", "data", "testScores.csv")
+
+  # Try to read the CSV data using pandas
+  try:
+    df = pd.read_csv(test_scores_path)
+    # Convert the DataFrame to a dictionary (optional)
+    data = df.to_dict(orient="records")
+    response = flask.jsonify(data)
+  except Exception as e:
+    # Handle errors gracefully
+    return flask.jsonify({"error": f"Error reading test scores: {str(e)}"}), 500
+
+  response.headers['Access-Control-Allow-Origin'] = '*'
+  return response
 
 if __name__ == "__main__":
     app.run()
