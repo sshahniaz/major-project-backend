@@ -188,7 +188,7 @@ def predict():
     # Prepare the JSON response with the prediction
     # response = json.dumps(data, indent=4)  # Convert to list for JSON
     response = flask.jsonify(data)
-    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Origin'] = '*.vercel.app'
 
     return response
 
