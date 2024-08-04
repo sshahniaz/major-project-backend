@@ -2,6 +2,7 @@ import flask
 from flask import request
 import json
 import csv
+import uuid
 import pandas as pd
 import numpy as np
 from sklearn.metrics import mean_squared_error, r2_score
@@ -17,6 +18,9 @@ model_path = os.path.join(os.path.dirname(__file__), "..", "models", "BigMart_Sa
 
 # Get the full path to the test scores CSV file
 test_scores_path = os.path.join(os.path.dirname(__file__), "..", "data", "testScores.csv")
+
+
+predicted_csv_path = os.path.join(os.path.dirname(__file__), "..", "data","outputs", "predicted.csv")
 
 # Load your pre-trained ML model using pickle
 with open(model_path, "rb") as file:
@@ -118,7 +122,11 @@ def predict():
     initialDf['LocationType'] = initialDf['LocationType'].replace({0:'Tier 1', 1:'Tier 2', 2:'Tier 3'})
     initialDf['OutletType'] = initialDf['OutletType'].replace({0:'Grocery Store', 1:'Supermarket Type1', 2:'Supermarket Type2', 3:'Supermarket Type3'})
 
-    
+
+    #Saving initailDf to csv for download via API
+    initialDf.to_csv(predicted_csv_path, index=False)    
+
+
     # Calculate average sales for each product type
     product_sales = initialDf.groupby("ProductType")["OutletSales"].mean()
     product_sales = product_sales.sort_values(ascending=False)
@@ -212,6 +220,29 @@ def get_test_scores():
 
   response.headers['Access-Control-Allow-Origin'] = '*'
   return response
+
+#Add a route to download the initialDf.csv file
+@app.route("/downloadPredicted", methods=["GET"])
+def download_predicted():
+
+    # Check if the file exists
+    if not os.path.exists(predicted_csv_path):
+        return flask.jsonify({"error": "Predicted CSV file not found"}), 404
+
+    response = flask.send_file(predicted_csv_path, as_attachment=True)
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    try:
+        return response
+    finally:
+        # Delete the file immediately after download
+        try:
+            os.remove(predicted_csv_path)
+            print("Predicted CSV file deleted successfully after download")
+        except FileNotFoundError:
+            print("Predicted CSV file not found after download")
+        except Exception as e:
+            print(f"Error deleting predicted file after download: {e}")
+
 
 if __name__ == "__main__":
     app.run()
