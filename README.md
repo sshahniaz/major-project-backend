@@ -104,3 +104,8 @@ This is the Flask API that facilitates sales prediction using a pre-trained mode
 *   File paths for model, data, and output files are constructed dynamically using os.path.join for better maintainability.
     
 *   Error handling is implemented to gracefully handle exceptions during file operations, data processing, and model prediction.
+    
+
+**GitHub Link:** [**https://github.com/sshahniaz/major-project-backend**](https://github.com/sshahniaz/major-project-backend)
+
+**Hosted Link (this is the API link use the methods above to access):** [**https://sea-turtle-app-vktl8.ondigitalocean.app/**](https://sea-turtle-app-vktl8.ondigitalocean.app/)
