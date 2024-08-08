@@ -1,6 +1,98 @@
 # major-project-backend: The Catalyst API
 This is the Flask API that facilitates sales prediction using a pre-trained model and user-uploaded data for The Catalyst app.
 
+**Getting Started:**
+
+To get started with this project, follow these steps:
+
+1. Clone the repository from the GitHub link provided: [https://github.com/sshahniaz/major-project-backend](https://github.com/sshahniaz/major-project-backend)
+
+2. Navigate to the project directory:
+
+    ```
+    cd major-project-backend
+    ```
+
+3. Set up a Python virtual environment:
+
+    ```
+    python -m venv venv
+    ```
+
+4. Activate the virtual environment:
+
+    - For Windows:
+
+        ```
+        venv\Scripts\activate
+        ```
+
+    - For macOS/Linux:
+
+        ```
+        source venv/bin/activate
+        ```
+
+5. Install the required dependencies by running the following command in your terminal:
+
+    ```
+    pip install -r requirements.txt
+    ```
+
+6. Run the Flask API by executing the following command:
+
+    ```
+    python app.py
+    ```
+7. To deploy the Flask API using Gunicorn, execute the following command:
+
+    ```
+         gunicorn -w 2 src.app:app  
+    ```
+
+    This will start the API using Gunicorn as the server. You can access the API endpoints using tools like cURL or Postman.
+
+    - Note: Make sure you have Gunicorn installed in your Python virtual environment.
+
+
+
+7. The API will start running on `http://localhost:5000`. You can access the API endpoints using tools like cURL or Postman.
+
+8. Use the provided routes (`/predict`, `/getTestScores`, `/downloadPredicted`) to interact with the API and perform the desired functionalities.
+
+That's it! You are now ready to use the Flask API for sales prediction and data retrieval. Happy coding!
+
+To get started with this project, follow these steps:
+
+1. Clone the repository from the GitHub link provided: [https://github.com/sshahniaz/major-project-backend](https://github.com/sshahniaz/major-project-backend)
+
+2. Install the required dependencies by running the following command in your terminal:
+
+    ```
+    pip install -r requirements.txt
+    ```
+
+3. Make sure you have Python installed on your system. This project requires Python 3.7 or higher.
+
+4. Once the dependencies are installed, navigate to the project directory:
+
+    ```
+    cd major-project-backend
+    ```
+
+5. Run the Flask API by executing the following command:
+
+    ```
+    python app.py
+    ```
+
+6. The API will start running on `http://localhost:5000`. You can access the API endpoints using tools like cURL or Postman.
+
+7. Use the provided routes (`/predict`, `/getTestScores`, `/downloadPredicted`) to interact with the API and perform the desired functionalities.
+
+That's it! You are now ready to use the Flask API for sales prediction and data retrieval. Happy coding!
+
+
 **Key Functionalities:**
 
 *   **Prediction:** Upload a CSV file containing product and outlet information. The API predicts sales figures using the loaded model and returns a JSON response with:
