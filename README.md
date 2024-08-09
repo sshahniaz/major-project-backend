@@ -60,7 +60,6 @@ To get started with this project, follow these steps:
 
 8. Use the provided routes (`/predict`, `/getTestScores`, `/downloadPredicted`) to interact with the API and perform the desired functionalities.
 
-That's it! You are now ready to use the Flask API for sales prediction and data retrieval. Happy coding!
 
 To get started with this project, follow these steps:
 
@@ -90,7 +89,6 @@ To get started with this project, follow these steps:
 
 7. Use the provided routes (`/predict`, `/getTestScores`, `/downloadPredicted`) to interact with the API and perform the desired functionalities.
 
-That's it! You are now ready to use the Flask API for sales prediction and data retrieval. Happy coding!
 
 
 **Key Functionalities:**
